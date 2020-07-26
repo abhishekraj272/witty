@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	witai "github.com/wit-ai/wit-go"
@@ -124,11 +125,20 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
+	port := getPort()
 	http.HandleFunc("/machaao_hook", messageHandler)
 
-	fmt.Printf("Starting server at http://127.0.0.1:8080\n")
+	log.Println("[-] Listening on...", port)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "4747"
+		log.Println("[-] No PORT environment variable detected. Setting to ", port)
+	}
+	return ":" + port
 }
