@@ -125,8 +125,6 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	fmt.Println(getJoke("girlfriend"))
-
 	http.HandleFunc("/machaao_hook", messageHandler)
 
 	fmt.Printf("Starting server at http://127.0.0.1:8080\n")
