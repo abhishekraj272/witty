@@ -129,7 +129,7 @@ func main() {
 	http.HandleFunc("/machaao_hook", messageHandler)
 
 	log.Println("[-] Listening on...", port)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
 }
