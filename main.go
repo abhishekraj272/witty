@@ -19,8 +19,8 @@ import (
 	// witai "github.com/wit-ai/wit-go"
 )
 
-var machaaoAPIToken string = "3f79e9c0-c455-11ea-ad9a-094460ab21b1"
-var witAiToken string = "HNNC6IHVUOVQUGH4ANQJJJHFQEQ326CG"
+var machaaoAPIToken string = os.Getenv("MachaaoApiToken")
+var witAiToken string = os.Getenv("WitApiToken")
 
 type memesResponse struct {
 	PostLink  string `json:"postLink"`
@@ -66,22 +66,26 @@ func simpleReply(userID []string, message string, apiToken string) {
 	if strings.ToLower(message) == "random jokes" {
 		message = getJoke("%20")
 	} else if strings.ToLower(message) == "random memes" {
-		title, url, subreddit := getMemes()
+		title, url, postlink := getMemes()
 
 		_ = title
 		body := map[string]interface{}{
-			"identifier": "BROADCAST_FB_QUICK_REPLIES",
-			"source":     "firebase",
-			"users":      userID,
+			"users": userID,
 			"message": map[string]interface{}{
 				"attachment": map[string]interface{}{
 					"type": "template",
 					"payload": map[string]interface{}{
 						"template_type": "generic",
-						"elements": []map[string]string{
+						"elements": []map[string]interface{}{
 							{
-								"subtitle":  "Courtesy " + subreddit,
 								"image_url": url,
+								"buttons": []map[string]string{
+									{
+										"type":  "web_url",
+										"url":   postlink,
+										"title": "ℹ️ Source",
+									},
+								},
 							},
 						},
 					},
@@ -89,13 +93,13 @@ func simpleReply(userID []string, message string, apiToken string) {
 				"quick_replies": []map[string]string{
 					{
 						"content_type": "text",
-						"payload":      "Random Jokes",
-						"title":        "Random Jokes",
+						"payload":      "😜 Random Jokes",
+						"title":        "😜 Random Jokes",
 					},
 					{
 						"content_type": "text",
-						"payload":      "Random Memes",
-						"title":        "Random Memes",
+						"payload":      "🙃 Random Memes",
+						"title":        "🙃 Random Memes",
 					},
 				},
 			},
@@ -144,21 +148,19 @@ func simpleReply(userID []string, message string, apiToken string) {
 	// var url string = "http://127.0.0.1:5000/upload"
 
 	body := map[string]interface{}{
-		"identifier": "BROADCAST_FB_QUICK_REPLIES",
-		"source":     "firebase",
-		"users":      userID,
+		"users": userID,
 		"message": map[string]interface{}{
 			"text": message,
 			"quick_replies": []map[string]string{
 				{
 					"content_type": "text",
-					"payload":      "Random Jokes",
-					"title":        "Random Jokes",
+					"payload":      "😜 Random Jokes",
+					"title":        "😜 Random Jokes",
 				},
 				{
 					"content_type": "text",
-					"payload":      "Random Memes",
-					"title":        "Random Memes",
+					"payload":      "🙃 Random Memes",
+					"title":        "🙃 Random Memes",
 				},
 			},
 		},
@@ -260,21 +262,19 @@ func quickReply(userID []string, message string, apiToken string) {
 	// var url string = "http://127.0.0.1:5000/upload"
 
 	body := map[string]interface{}{
-		"identifier": "BROADCAST_FB_QUICK_REPLIES",
-		"source":     "firebase",
-		"users":      userID,
+		"users": userID,
 		"message": map[string]interface{}{
 			"text": "Hello, My name is Witty - Your funny friend ;)",
 			"quick_replies": []map[string]string{
 				{
 					"content_type": "text",
-					"payload":      "Random Jokes",
-					"title":        "Random Jokes",
+					"payload":      "😜 Random Jokes",
+					"title":        "😜 Random Jokes",
 				},
 				{
 					"content_type": "text",
-					"payload":      "Random Memes",
-					"title":        "Random Memes",
+					"payload":      "🙃 Random Memes",
+					"title":        "🙃 Random Memes",
 				},
 			},
 		},
@@ -322,5 +322,5 @@ func getMemes() (string, string, string) {
 
 	json.Unmarshal(body, &jsonBody)
 
-	return jsonBody.Title, jsonBody.URL, jsonBody.Subreddit
+	return jsonBody.Title, jsonBody.URL, jsonBody.PostLink
 }
