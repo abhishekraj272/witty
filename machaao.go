@@ -11,12 +11,27 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	witai "github.com/wit-ai/wit-go"
 	// "os"
 	// witai "github.com/wit-ai/wit-go"
 )
 
-func getJoke() string {
-	req, err := http.NewRequest("GET", "https://icanhazdadjoke.com/", nil)
+func getJokeTagUsingWitAI(message string) string {
+	client := witai.NewClient("HNNC6IHVUOVQUGH4ANQJJJHFQEQ326CG")
+	// Use client.SetHTTPClient() to set custom http.Client
+
+	msg, _ := client.Parse(&witai.MessageRequest{
+		Query: message,
+	})
+
+	return msg.Entities["local_search_query"].([]interface{})[0].(map[string]interface{})["value"].(string)
+}
+
+func getJoke(tag string) string {
+
+	var url string = "https://sv443.net/jokeapi/v2/joke/Any?format=txt&contains=" + tag
+
+	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -33,9 +48,9 @@ func getJoke() string {
 
 func simpleReply(userID []string, message string, apiToken string) {
 
-	if message == "joke" {
-		message = getJoke()
-	}
+	var tag string = getJokeTagUsingWitAI(message)
+
+	message = getJoke(tag)
 
 	log.Println("Sending Message to user")
 
@@ -109,17 +124,9 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// client := witai.NewClient("HNNC6IHVUOVQUGH4ANQJJJHFQEQ326CG")
-	// // Use client.SetHTTPClient() to set custom http.Client
 
-	// reader := bufio.NewReader(os.Stdin)
-	// fmt.Println("Enter message to send.")
-	// query, _ := reader.ReadString('\n')
+	fmt.Println(getJoke("girlfriend"))
 
-	// msg, _ := client.Parse(&witai.MessageRequest{
-	// 	Query: query,
-	// })
-	// fmt.Printf("%v\n", msg)
 	http.HandleFunc("/machaao_hook", messageHandler)
 
 	fmt.Printf("Starting server at http://127.0.0.1:8080\n")
