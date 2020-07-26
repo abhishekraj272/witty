@@ -63,9 +63,9 @@ func getJoke(tag string) string {
 
 func simpleReply(userID []string, message string, apiToken string) {
 
-	if strings.ToLower(message) == "random jokes" {
+	if strings.ToLower(message) == "😜 Random Jokes" {
 		message = getJoke("%20")
-	} else if strings.ToLower(message) == "random memes" {
+	} else if message == "🙃 Random Memes" {
 		title, url, postlink := getMemes()
 
 		_ = title
