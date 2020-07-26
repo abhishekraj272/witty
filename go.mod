@@ -1,6 +1,6 @@
 module github.com/abhishekraj272/golang_machaao
 
-go v1.23
+go v1.14
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

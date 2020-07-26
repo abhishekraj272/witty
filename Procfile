@@ -1,1 +1,1 @@
-web: main
+web: bin/golang_machaao
