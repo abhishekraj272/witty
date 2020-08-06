@@ -5,22 +5,18 @@ import (
 
 	// "bufio"
 
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/machaao/machaao-go"
 	witai "github.com/wit-ai/wit-go"
 	// "os"
 	// witai "github.com/wit-ai/wit-go"
 )
-
-var machaaoAPIToken string = os.Getenv("MachaaoApiToken")
-var witAiToken string = os.Getenv("WitApiToken")
 
 type memesResponse struct {
 	PostLink  string `json:"postLink"`
@@ -31,8 +27,24 @@ type memesResponse struct {
 	Spoiler   bool   `json:"spoiler"`
 }
 
-func getJokeTagUsingWitAI(message string) string {
-	client := witai.NewClient(witAiToken)
+var memeSubreddits = map[string]string{
+	"school":     "gradschoolmemes",
+	"college":    "gradschoolmemes",
+	"university": "gradschoolmemes",
+	"photoshop":  "photoshopbattles",
+	"no context": "nocontextpics",
+	"animals":    "AdviceAnimals",
+	"nsfw":       "NSFWMeme",
+}
+
+var isUserAdult bool = false
+
+func main() {
+	machaao.Server(messageHandler)
+}
+
+func getMemeTagUsingWitAI(message string) string {
+	client := witai.NewClient(machaao.WitAPIToken)
 	// Use client.SetHTTPClient() to set custom http.Client
 
 	msg, _ := client.Parse(&witai.MessageRequest{
@@ -42,151 +54,20 @@ func getJokeTagUsingWitAI(message string) string {
 	return msg.Entities["local_search_query"].([]interface{})[0].(map[string]interface{})["value"].(string)
 }
 
-func getJoke(tag string) string {
-
-	var url string = "https://sv443.net/jokeapi/v2/joke/Any?format=txt&contains=" + tag
-
-	req, err := http.NewRequest("GET", url, nil)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	req.Header.Set("Accept", "text/plain")
-	client := &http.Client{}
-	resp, _ := client.Do(req)
-
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	return string(body)
-}
-
-func simpleReply(userID []string, message string, apiToken string) {
-
-	if strings.ToLower(message) == "😜 Random Jokes" {
-		message = getJoke("%20")
-	} else if message == "🙃 Random Memes" {
-		title, url, postlink := getMemes()
-
-		_ = title
-		body := map[string]interface{}{
-			"users": userID,
-			"message": map[string]interface{}{
-				"attachment": map[string]interface{}{
-					"type": "template",
-					"payload": map[string]interface{}{
-						"template_type": "generic",
-						"elements": []map[string]interface{}{
-							{
-								"image_url": url,
-								"buttons": []map[string]string{
-									{
-										"type":  "web_url",
-										"url":   postlink,
-										"title": "ℹ️ Source",
-									},
-								},
-							},
-						},
-					},
-				},
-				"quick_replies": []map[string]string{
-					{
-						"content_type": "text",
-						"payload":      "😜 Random Jokes",
-						"title":        "😜 Random Jokes",
-					},
-					{
-						"content_type": "text",
-						"payload":      "🙃 Random Memes",
-						"title":        "🙃 Random Memes",
-					},
-				},
-			},
-		}
-		log.Println("Sending Message to user")
-
-		var urlMachaao string = "https://ganglia-dev.machaao.com/v1/messages/send"
-		// var url string = "http://127.0.0.1:5000/upload"
-
-		jsonValue, _ := json.Marshal(body)
-
-		// fmt.Println(jsonValue)
-
-		req, err := http.NewRequest("POST", urlMachaao, bytes.NewBuffer(jsonValue))
-
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("api_token", apiToken)
-
-		fmt.Println(req)
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			panic(err)
-		}
-		defer resp.Body.Close()
-
-		fmt.Println("response Status:", resp.Status)
-		bodyf, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println("response Body:", string(bodyf))
-
-		return
-
-	} else {
-		var tag string = getJokeTagUsingWitAI(message)
-		message = getJoke(tag)
-
-		if message[:9] == "Error 106" {
-			message = "Sorry, no jokes found"
-		}
-	}
+func sendRandMeme(userID []string, message string) {
 
 	log.Println("Sending Message to user")
 
-	var url string = "https://ganglia-dev.machaao.com/v1/messages/send"
-	// var url string = "http://127.0.0.1:5000/upload"
+	_, url, postlink := getMemes("")
 
-	body := map[string]interface{}{
-		"users": userID,
-		"message": map[string]interface{}{
-			"text": message,
-			"quick_replies": []map[string]string{
-				{
-					"content_type": "text",
-					"payload":      "😜 Random Jokes",
-					"title":        "😜 Random Jokes",
-				},
-				{
-					"content_type": "text",
-					"payload":      "🙃 Random Memes",
-					"title":        "🙃 Random Memes",
-				},
-			},
-		},
-	}
+	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
 
-	jsonValue, _ := json.Marshal(body)
-
-	// fmt.Println(jsonValue)
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("api_token", apiToken)
-
-	fmt.Println(req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
-	defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	bodyf, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(bodyf))
+	log.Printf("SR POST Request Response %s", resp.Status)
+
 }
 
 func messageHandler(w http.ResponseWriter, r *http.Request) {
@@ -209,7 +90,7 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(machaaoAPIToken), nil
+		return []byte(machaao.MachaaoAPIToken), nil
 	})
 
 	_ = token
@@ -226,86 +107,136 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(r.Header["User_id"])
 
-	if messageText == "hi" {
-		quickReply(r.Header["User_id"], messageText, machaaoAPIToken)
+	if strings.ToLower(messageText) == "hi" {
+		quickReply(r.Header["User_id"], messageText)
+	} else if strings.ToLower(messageText) == "random memes" || strings.ToLower(messageText) == "random meme" {
+		sendRandMeme(r.Header["User_id"], messageText)
+	} else if strings.ToLower(messageText) == "nsfw" {
+		if isUserAdult {
+			sendSpecificMemes(r.Header["User_id"], messageText)
+		} else {
+			checkAdultPrompt(r.Header["User_id"])
+		}
+	} else if messageText == "setADULT18" {
+		setAdultVar(r.Header["User_id"])
 	} else {
-		simpleReply(r.Header["User_id"], messageText, machaaoAPIToken)
+		sendSpecificMemes(r.Header["User_id"], messageText)
 	}
 }
 
-func main() {
-	port := getPort()
-	http.HandleFunc("/machaao_hook", messageHandler)
-
-	log.Println("[-] Listening on...", port)
-	if err := http.ListenAndServe(port, nil); err != nil {
-		log.Fatal(err)
-	}
-
-	// getMemes()
-}
-
-func getPort() string {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "4747"
-		log.Println("[-] No PORT environment variable detected. Setting to ", port)
-	}
-	return ":" + port
-}
-
-func quickReply(userID []string, message string, apiToken string) {
-
-	log.Println("Sending QR to user")
-
-	var url string = "https://ganglia-dev.machaao.com/v1/messages/send"
-	// var url string = "http://127.0.0.1:5000/upload"
+func checkAdultPrompt(userID []string) {
 
 	body := map[string]interface{}{
 		"users": userID,
 		"message": map[string]interface{}{
-			"text": "Hello, My name is Witty - Your funny friend ;)",
+			"text": "Are you over 18 year old?",
 			"quick_replies": []map[string]string{
 				{
 					"content_type": "text",
-					"payload":      "😜 Random Jokes",
-					"title":        "😜 Random Jokes",
+					"payload":      "setADULT18",
+					"title":        "Yes, I'm over 18",
 				},
 				{
 					"content_type": "text",
-					"payload":      "🙃 Random Memes",
-					"title":        "🙃 Random Memes",
+					"payload":      "no",
+					"title":        "No",
 				},
 			},
 		},
 	}
 
-	jsonValue, _ := json.Marshal(body)
+	resp, err := machaao.SendMessage(body)
 
-	// fmt.Println(jsonValue)
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("api_token", apiToken)
-
-	fmt.Println(req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
-	defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	bodyf, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(bodyf))
+	log.Printf("Check Adult Prompt %s", resp.Status)
+
 }
 
-func getMemes() (string, string, string) {
+func setAdultVar(userID []string) {
+	isUserAdult = true
+	sendSpecificMemes(userID, "nsfw")
+	log.Printf("NOW %s is set to ADULT", userID)
+}
 
-	var url string = "https://meme-api.herokuapp.com/gimme"
+func quickReply(userID []string, message string) {
+
+	log.Println("Sending QR to user")
+
+	body := map[string]interface{}{
+		"users": userID,
+		"message": map[string]interface{}{
+			"text": "Hello, My name is Witty - Your meme friend ;)",
+			"quick_replies": []map[string]string{
+				{
+					"content_type": "text",
+					"payload":      "Random Memes",
+					"title":        "🙃 Random Memes",
+				},
+				{
+					"content_type": "text",
+					"payload":      "school",
+					"title":        "School",
+				},
+				{
+					"content_type": "text",
+					"payload":      "photoshop",
+					"title":        "Photoshop",
+				},
+				{
+					"content_type": "text",
+					"payload":      "no context",
+					"title":        "No Context",
+				},
+				{
+					"content_type": "text",
+					"payload":      "nsfw",
+					"title":        "NSFW",
+				},
+			},
+		},
+	}
+
+	resp, err := machaao.SendMessage(body)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf("QR POST Request Response %s", resp.Status)
+
+}
+
+func sendSpecificMemes(userID []string, message string) {
+
+	var url, postlink string = "", ""
+	if subreddit, ok := memeSubreddits[message]; ok {
+		_, url, postlink = getMemes(subreddit)
+	} else {
+		_, url, postlink = getMemes("")
+	}
+
+	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf("Specific Meme POST Request Response %s", resp.Status)
+
+}
+
+func getMemes(subreddit string) (string, string, string) {
+
+	var url string = ""
+
+	if subreddit == "" {
+		url = "https://meme-api.herokuapp.com/gimme"
+	} else {
+		url = "https://meme-api.herokuapp.com/gimme/" + subreddit
+	}
 
 	var jsonBody memesResponse
 
@@ -323,4 +254,59 @@ func getMemes() (string, string, string) {
 	json.Unmarshal(body, &jsonBody)
 
 	return jsonBody.Title, jsonBody.URL, jsonBody.PostLink
+}
+
+func getMemeBody(userID []string, url string, postlink string) interface{} {
+	body := map[string]interface{}{
+		"users": userID,
+		"message": map[string]interface{}{
+			"attachment": map[string]interface{}{
+				"type": "template",
+				"payload": map[string]interface{}{
+					"template_type": "generic",
+					"elements": []map[string]interface{}{
+						{
+							"image_url": url,
+							"buttons": []map[string]string{
+								{
+									"type":  "web_url",
+									"url":   postlink,
+									"title": "ℹ️ Source",
+								},
+							},
+						},
+					},
+				},
+			},
+			"quick_replies": []map[string]string{
+				{
+					"content_type": "text",
+					"payload":      "Random Memes",
+					"title":        "🙃 Random Memes",
+				},
+				{
+					"content_type": "text",
+					"payload":      "school",
+					"title":        "School",
+				},
+				{
+					"content_type": "text",
+					"payload":      "photoshop",
+					"title":        "Photoshop",
+				},
+				{
+					"content_type": "text",
+					"payload":      "no context",
+					"title":        "No Context",
+				},
+				{
+					"content_type": "text",
+					"payload":      "nsfw",
+					"title":        "NSFW",
+				},
+			},
+		},
+	}
+
+	return body
 }
