@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"strings"
 
 	// "bufio"
@@ -27,6 +28,17 @@ type memesResponse struct {
 	Spoiler   bool   `json:"spoiler"`
 }
 
+type userTags struct {
+	ID          string `json:"_id"`
+	DisplayName string `json:"displayName"`
+	Values      []bool `json:"values"`
+	Name        string `json:"name"`
+}
+
+type userTagsWrapper struct {
+	value []userTags
+}
+
 var memeSubreddits = map[string]string{
 	"school":     "gradschoolmemes",
 	"college":    "gradschoolmemes",
@@ -36,6 +48,10 @@ var memeSubreddits = map[string]string{
 	"animals":    "AdviceAnimals",
 	"nsfw":       "NSFWMeme",
 }
+
+var nsfwSubreddits = []string{"NSFWFunny", "NSFWMeme", "MemesNSFW", "Nsfwhumour", "nsfw", "NSFW_GIF"}
+
+var rndSubreddits = []string{"memes", "dankmemes", "Memes_Of_The_Dank", "ComedyCemetery", "FellowKids", "wholesomememes", "ProtectAndServe"}
 
 var isUserAdult bool = false
 
@@ -58,7 +74,9 @@ func sendRandMeme(userID []string, message string) {
 
 	log.Println("Sending Message to user")
 
-	_, url, postlink := getMemes("")
+	rndNum := rand.Intn(len(rndSubreddits))
+
+	_, url, postlink := getMemes(rndSubreddits[rndNum])
 
 	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
 
@@ -107,20 +125,37 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(r.Header["User_id"])
 
+	var userID []string = r.Header["User_id"]
+
 	if strings.ToLower(messageText) == "hi" {
-		quickReply(r.Header["User_id"], messageText)
+		quickReply(userID, messageText)
 	} else if strings.ToLower(messageText) == "random memes" || strings.ToLower(messageText) == "random meme" {
-		sendRandMeme(r.Header["User_id"], messageText)
+		sendRandMeme(userID, messageText)
 	} else if strings.ToLower(messageText) == "nsfw" {
 		if isUserAdult {
-			sendSpecificMemes(r.Header["User_id"], messageText)
+			rndNum := rand.Intn(len(nsfwSubreddits))
+			messageText = nsfwSubreddits[rndNum]
+			sendSpecificMemes(userID, messageText)
 		} else {
-			checkAdultPrompt(r.Header["User_id"])
+			resp, _ := machaao.GetUserTag(userID[0])
+
+			var tagData []interface{}
+
+			body1, _ := ioutil.ReadAll(resp.Body)
+			json.Unmarshal(body1, &tagData)
+
+			if tagData[0].(map[string]interface{})["name"] == "adult" {
+				isUserAdult = true
+				sendSpecificMemes(userID, "nsfw")
+				log.Printf("NOW %s is set to ADULT", userID)
+			} else {
+				checkAdultPrompt(userID)
+			}
 		}
 	} else if messageText == "setADULT18" {
-		setAdultVar(r.Header["User_id"])
+		setAdultVar(userID)
 	} else {
-		sendSpecificMemes(r.Header["User_id"], messageText)
+		sendSpecificMemes(userID, messageText)
 	}
 }
 
@@ -156,7 +191,16 @@ func checkAdultPrompt(userID []string) {
 }
 
 func setAdultVar(userID []string) {
-	isUserAdult = true
+
+	body := map[string]interface{}{
+		"tag":         "adult",
+		"source":      "web",
+		"status":      1,
+		"displayName": "Adult",
+	}
+
+	machaao.TagUser(userID[0], body)
+
 	sendSpecificMemes(userID, "nsfw")
 	log.Printf("NOW %s is set to ADULT", userID)
 }
