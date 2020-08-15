@@ -133,23 +133,23 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 		sendRandMeme(userID, messageText)
 	} else if strings.ToLower(messageText) == "nsfw" {
 		if isUserAdult {
-			// rndNum1 := rand.Intn(len(nsfwSubreddits))
-			sendSpecificMemes(userID, "NSFWMeme")
+			rndNum1 := rand.Intn(len(nsfwSubreddits))
+			sendSpecificMemes(userID, nsfwSubreddits[rndNum1])
 		} else {
-			resp, _ := machaao.GetUserTag(userID[0])
+			// resp, _ := machaao.GetUserTag(userID[0])
 
-			var tagData []interface{}
+			// var tagData []interface{}
 
-			body1, _ := ioutil.ReadAll(resp.Body)
-			json.Unmarshal(body1, &tagData)
+			// body1, _ := ioutil.ReadAll(resp.Body)
+			// json.Unmarshal(body1, &tagData)
 
-			if tagData[0].(map[string]interface{})["name"] == "adult" {
-				isUserAdult = true
-				sendSpecificMemes(userID, "nsfw")
-				log.Printf("NOW %s is set to ADULT", userID)
-			} else {
-				checkAdultPrompt(userID)
-			}
+			// if tagData[0].(map[string]interface{})["name"] == "adult" {
+			// 	isUserAdult = true
+			// 	sendSpecificMemes(userID, "nsfw")
+			// 	log.Printf("NOW %s is set to ADULT", userID)
+			// } else {
+			checkAdultPrompt(userID)
+			// }
 		}
 	} else if messageText == "setADULT18" {
 		setAdultVar(userID)
