@@ -133,8 +133,8 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 		sendRandMeme(userID, messageText)
 	} else if strings.ToLower(messageText) == "nsfw" {
 		if isUserAdult {
-			rndNum1 := rand.Intn(len(nsfwSubreddits))
-			sendSpecificMemes(userID, nsfwSubreddits[rndNum1])
+			// rndNum1 := rand.Intn(len(nsfwSubreddits))
+			sendSpecificMemes(userID, "NSFWMeme")
 		} else {
 			resp, _ := machaao.GetUserTag(userID[0])
 
