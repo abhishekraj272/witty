@@ -191,14 +191,15 @@ func checkAdultPrompt(userID []string) {
 
 func setAdultVar(userID []string) {
 
-	body := map[string]interface{}{
-		"tag":         "adult",
-		"source":      "web",
-		"status":      1,
-		"displayName": "Adult",
-	}
+	// body := map[string]interface{}{
+	// 	"tag":         "adult",
+	// 	"source":      "web",
+	// 	"status":      1,
+	// 	"displayName": "Adult",
+	// }
 
-	machaao.TagUser(userID[0], body)
+	// machaao.TagUser(userID[0], body)
+	isUserAdult = true
 
 	sendSpecificMemes(userID, "nsfw")
 	log.Printf("NOW %s is set to ADULT", userID)
