@@ -2,5 +2,7 @@ github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumC
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/machaao/machaao-go v0.0.0-20200804165603-d0bfbad0d451 h1:h499X7Qq3UExzC4wk3MjmB0OC//nnaMk5RRgSuz0kr4=
 github.com/machaao/machaao-go v0.0.0-20200804165603-d0bfbad0d451/go.mod h1:xtt1XWcByXY6WTXJNVfw7/Yeyn/L+DHKdRzjkAzSokc=
+github.com/machaao/machaao-go v0.0.0-20200815180842-7218882b8d6c h1:AtHf8Tjk7Exu4YaaybjRA5X0OnrNfLw67Vkw8aUnbWM=
+github.com/machaao/machaao-go v0.0.0-20200815180842-7218882b8d6c/go.mod h1:xtt1XWcByXY6WTXJNVfw7/Yeyn/L+DHKdRzjkAzSokc=
 github.com/wit-ai/wit-go v1.0.12 h1:rOScExdkhGKjGf4mw3zMG2HhYBMtPC38osK2AUepmiM=
 github.com/wit-ai/wit-go v1.0.12/go.mod h1:jDrjhSNjiMmrxoZwAIdE/oO+x/yabHgTqQcIFmqptNI=
