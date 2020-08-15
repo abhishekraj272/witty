@@ -3,6 +3,7 @@
 ### To run locally
 
 1. Install GO
-2. go get "github.com/dgrijalva/jwt-go"
-3. go get "github.com/wit-ai/wit-go"
-4. go run main.go
+2. go get github.com/dgrijalva/jwt-go
+3. go get github.com/wit-ai/wit-go
+4. go get github.com/machaao/machaao-go
+5. go run main.go
