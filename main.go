@@ -127,30 +127,45 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 	var userID []string = r.Header["User_id"]
 
+	// Send quick reply
 	if strings.ToLower(messageText) == "hi" {
+
 		quickReply(userID, messageText)
+
+		// Check if user ask for random memes
 	} else if strings.ToLower(messageText) == "random memes" || strings.ToLower(messageText) == "random meme" {
+
 		sendRandMeme(userID, messageText)
+
+		// Check if user ask for nsfw content
 	} else if strings.ToLower(messageText) == "nsfw" {
-		if isUserAdult {
+
+		// Check if user is 18+, send meme, else check in DATABASE or send ADULT CHECK prompt to new user.
+		resp, _ := machaao.GetUserTag(userID[0])
+
+		var tagData []interface{}
+
+		body1, _ := ioutil.ReadAll(resp.Body)
+		json.Unmarshal(body1, &tagData)
+
+		if len(tagData) == 0 {
+
+			checkAdultPrompt(userID)
+
+		} else if tagData[0].(map[string]interface{})["name"] == "adult" {
+
+			log.Printf("%s is an ADULT", userID)
+
+			// Get random meme subreddit.
 			rndNum1 := rand.Intn(len(nsfwSubreddits))
 			sendSpecificMemes(userID, nsfwSubreddits[rndNum1])
+
 		} else {
-			// resp, _ := machaao.GetUserTag(userID[0])
 
-			// var tagData []interface{}
-
-			// body1, _ := ioutil.ReadAll(resp.Body)
-			// json.Unmarshal(body1, &tagData)
-
-			// if tagData[0].(map[string]interface{})["name"] == "adult" {
-			// 	isUserAdult = true
-			// 	sendSpecificMemes(userID, "nsfw")
-			// 	log.Printf("NOW %s is set to ADULT", userID)
-			// } else {
 			checkAdultPrompt(userID)
-			// }
+
 		}
+
 	} else if messageText == "setADULT18" {
 		setAdultVar(userID)
 	} else {
@@ -191,15 +206,14 @@ func checkAdultPrompt(userID []string) {
 
 func setAdultVar(userID []string) {
 
-	// body := map[string]interface{}{
-	// 	"tag":         "adult",
-	// 	"source":      "web",
-	// 	"status":      1,
-	// 	"displayName": "Adult",
-	// }
+	body := map[string]interface{}{
+		"tag":         "adult",
+		"source":      "web",
+		"status":      1,
+		"displayName": "Adult",
+	}
 
-	// machaao.TagUser(userID[0], body)
-	isUserAdult = true
+	machaao.TagUser(userID[0], body)
 
 	sendSpecificMemes(userID, "nsfw")
 	log.Printf("NOW %s is set to ADULT", userID)
