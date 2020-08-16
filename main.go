@@ -158,7 +158,7 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 			// Get random meme subreddit.
 			rndNum1 := rand.Intn(len(nsfwSubreddits))
-			sendSpecificMemes(userID, nsfwSubreddits[rndNum1])
+			sendNSFWMemes(userID, nsfwSubreddits[rndNum1])
 
 		} else {
 
@@ -264,6 +264,20 @@ func quickReply(userID []string, message string) {
 	}
 
 	log.Printf("QR POST Request Response %s", resp.Status)
+
+}
+
+func sendNSFWMemes(userID []string, subreddit string) {
+
+	_, url, postlink := getMemes(subreddit)
+
+	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf("Specific Meme POST Request Response %s", resp.Status)
 
 }
 
