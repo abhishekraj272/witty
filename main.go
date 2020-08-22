@@ -76,7 +76,7 @@ func sendRandMeme(userID []string, message string) {
 
 	rndNum := rand.Intn(len(rndSubreddits))
 
-	_, url, postlink := getMemes(rndSubreddits[rndNum])
+	_, url, postlink := getMemes(rndSubreddits[rndNum], userID)
 
 	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
 
@@ -130,7 +130,7 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 	// Send quick reply
 	if strings.ToLower(messageText) == "hi" {
 
-		quickReply(userID, messageText)
+		quickReply(userID)
 
 		// Check if user ask for random memes
 	} else if strings.ToLower(messageText) == "random memes" || strings.ToLower(messageText) == "random meme" {
@@ -219,7 +219,7 @@ func setAdultVar(userID []string) {
 	log.Printf("NOW %s is set to ADULT", userID)
 }
 
-func quickReply(userID []string, message string) {
+func quickReply(userID []string) {
 
 	log.Println("Sending QR to user")
 
@@ -269,7 +269,7 @@ func quickReply(userID []string, message string) {
 
 func sendNSFWMemes(userID []string, subreddit string) {
 
-	_, url, postlink := getMemes(subreddit)
+	_, url, postlink := getMemes(subreddit, userID)
 
 	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
 
@@ -285,9 +285,9 @@ func sendSpecificMemes(userID []string, message string) {
 
 	var url, postlink string = "", ""
 	if subreddit, ok := memeSubreddits[message]; ok {
-		_, url, postlink = getMemes(subreddit)
+		_, url, postlink = getMemes(subreddit, userID)
 	} else {
-		_, url, postlink = getMemes("")
+		_, url, postlink = getMemes("", userID)
 	}
 
 	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
@@ -300,7 +300,7 @@ func sendSpecificMemes(userID []string, message string) {
 
 }
 
-func getMemes(subreddit string) (string, string, string) {
+func getMemes(subreddit string, userID []string) (string, string, string) {
 
 	var url string = ""
 
@@ -312,16 +312,27 @@ func getMemes(subreddit string) (string, string, string) {
 
 	var jsonBody memesResponse
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err1 := http.NewRequest("GET", url, nil)
 
-	if err != nil {
-		fmt.Println(err)
+	if err1 != nil {
+		fmt.Println(err1)
+		quickReply(userID)
 	}
 
 	client := &http.Client{}
-	resp, _ := client.Do(req)
+	resp, err2 := client.Do(req)
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	if err2 != nil {
+		fmt.Println(err2)
+		quickReply(userID)
+	}
+
+	body, err3 := ioutil.ReadAll(resp.Body)
+
+	if err3 != nil {
+		fmt.Println(err3)
+		quickReply(userID)
+	}
 
 	json.Unmarshal(body, &jsonBody)
 
