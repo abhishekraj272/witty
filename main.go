@@ -373,13 +373,13 @@ func getMemeBody(userID []string, url string, postlink string) interface{} {
 				},
 				{
 					"content_type": "text",
-					"payload":      "photoshop",
-					"title":        "Photoshop",
+					"payload":      "politics",
+					"title":        "Politics",
 				},
 				{
 					"content_type": "text",
-					"payload":      "no context",
-					"title":        "No Context",
+					"payload":      "programming",
+					"title":        "Programming",
 				},
 				{
 					"content_type": "text",
