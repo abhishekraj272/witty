@@ -40,13 +40,12 @@ type userTagsWrapper struct {
 }
 
 var memeSubreddits = map[string]string{
-	"school":     "gradschoolmemes",
-	"college":    "gradschoolmemes",
-	"university": "gradschoolmemes",
-	"photoshop":  "photoshopbattles",
-	"no context": "nocontextpics",
-	"animals":    "AdviceAnimals",
-	"nsfw":       "NSFWMeme",
+	"school":      "gradschoolmemes",
+	"college":     "gradschoolmemes",
+	"programming": "ProgrammerHumor",
+	"photoshop":   "photoshopbattles",
+	"politics":    "PresidentialRaceMemes",
+	"nsfw":        "NSFWMeme",
 }
 
 var nsfwSubreddits = []string{"NSFWFunny", "NSFWMeme", "MemesNSFW", "Nsfwhumour", "nsfw", "NSFW_GIF"}
@@ -240,13 +239,13 @@ func quickReply(userID []string) {
 				},
 				{
 					"content_type": "text",
-					"payload":      "photoshop",
-					"title":        "Photoshop",
+					"payload":      "politics",
+					"title":        "Politics",
 				},
 				{
 					"content_type": "text",
-					"payload":      "no context",
-					"title":        "No Context",
+					"payload":      "programming",
+					"title":        "Programming",
 				},
 				{
 					"content_type": "text",
