@@ -13,6 +13,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	_ "github.com/heroku/x/hmetrics/onload"
 	"github.com/machaao/machaao-go"
 	witai "github.com/wit-ai/wit-go"
 	// "os"
