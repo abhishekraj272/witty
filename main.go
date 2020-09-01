@@ -78,7 +78,7 @@ func sendRandMeme(userID []string, message string) {
 
 	_, url, postlink := getMemes(rndSubreddits[rndNum], userID)
 
-	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
+	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink, "Random Memes"))
 
 	if err != nil {
 		log.Println(err)
@@ -169,7 +169,7 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 	} else if messageText == "setADULT18" {
 		setAdultVar(userID)
 	} else {
-		sendSpecificMemes(userID, messageText)
+		sendSpecificMemes(userID, messageText, messageText)
 	}
 }
 
@@ -215,7 +215,7 @@ func setAdultVar(userID []string) {
 
 	machaao.TagUser(userID[0], body)
 
-	sendSpecificMemes(userID, "nsfw")
+	sendSpecificMemes(userID, "nsfw", "nsfw")
 	log.Printf("NOW %s is set to ADULT", userID)
 }
 
@@ -271,7 +271,7 @@ func sendNSFWMemes(userID []string, subreddit string) {
 
 	_, url, postlink := getMemes(subreddit, userID)
 
-	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
+	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink, "nsfw"))
 
 	if err != nil {
 		log.Println(err)
@@ -281,7 +281,7 @@ func sendNSFWMemes(userID []string, subreddit string) {
 
 }
 
-func sendSpecificMemes(userID []string, message string) {
+func sendSpecificMemes(userID []string, message string, memeType string) {
 
 	var url, postlink string = "", ""
 	if subreddit, ok := memeSubreddits[message]; ok {
@@ -290,7 +290,7 @@ func sendSpecificMemes(userID []string, message string) {
 		_, url, postlink = getMemes("", userID)
 	}
 
-	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink))
+	resp, err := machaao.SendMessage(getMemeBody(userID, url, postlink, memeType))
 
 	if err != nil {
 		log.Println(err)
@@ -339,7 +339,7 @@ func getMemes(subreddit string, userID []string) (string, string, string) {
 	return jsonBody.Title, jsonBody.URL, jsonBody.PostLink
 }
 
-func getMemeBody(userID []string, url string, postlink string) interface{} {
+func getMemeBody(userID []string, url string, postlink string, memeType string) interface{} {
 	body := map[string]interface{}{
 		"users": userID,
 		"message": map[string]interface{}{
@@ -352,9 +352,14 @@ func getMemeBody(userID []string, url string, postlink string) interface{} {
 							"image_url": url,
 							"buttons": []map[string]string{
 								{
+									"type":    "postback",
+									"payload": memeType,
+									"title":   "🔁 Repeat",
+								},
+								{
 									"type":  "web_url",
 									"url":   postlink,
-									"title": "ℹ️ Source",
+									"title": "👀 View",
 								},
 							},
 						},
