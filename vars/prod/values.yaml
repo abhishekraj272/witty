@@ -1,0 +1,45 @@
+# Default values for machaao-api-service
+replicaCount: 1
+
+# K8s version of a load balancer comes in the port and goes to your service
+# on the target port
+service:
+  type: ClusterIP
+  port: 4747
+  targetPort: 4747
+
+# Is your service accessible outside the cluster? Probably not, otherwise
+# lets chat.
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-machaao
+    kubernetes.io/ingress.class: nginx
+  path: /
+  hosts:
+    - "witty-bot.machaao.com"
+  tls:
+    - secretName: wildcard-machaao-com-tls
+      hosts:
+        - '*.machaao.com'
+
+
+# Environment variable for the environment
+MachaaoBaseURL: https://ganglia.machaao.com
+MachaaoAPIToken: a136bef0-e48e-11ea-9544-d15085e36643
+
+
+# Resource for your container. Deliberately small to start
+resources:
+  limits:
+   cpu: 300m
+   memory: 300Mi
+  requests:
+   cpu: 200m
+   memory: 250Mi
+
+
+# the docker image your pods will use.
+image:
+  repository: registry.machaao.com/machaao-witty-bot
+  pullPolicy: Always

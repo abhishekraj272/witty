@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: machaao-witty-bot-configmap
+
+data:
+  config.yaml: |
+    someKey: "{{ .Values.someValue }}"
+
