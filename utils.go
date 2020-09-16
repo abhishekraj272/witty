@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -100,11 +101,10 @@ func GetMemeBody(userID []string, url string, postlink string, memeType string) 
 									"payload": memeType,
 									"title":   "🔁 Repeat",
 								},
-								{
-									"type":  "web_url",
-									"url":   postlink,
-									"title": "👀 View",
-								},
+							},
+							"default_action": map[string]string{
+								"type": "web_url",
+								"url":  postlink,
 							},
 						},
 					},
@@ -139,7 +139,7 @@ func GetMemeBody(userID []string, url string, postlink string, memeType string) 
 			},
 		},
 	}
-
+	fmt.Println(body)
 	return body
 }
 
