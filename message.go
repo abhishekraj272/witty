@@ -10,8 +10,6 @@ import (
 // SendRandMeme Sends random meme to user.
 func SendRandMeme(userID []string, message string) {
 
-	log.Println("Sending Message to user")
-
 	rndNum := rand.Intn(len(RndSubreddits))
 
 	_, url, postlink := GetMemes(RndSubreddits[rndNum], userID)
@@ -22,7 +20,7 @@ func SendRandMeme(userID []string, message string) {
 		log.Println(err)
 	}
 
-	log.Printf("SR POST Request Response %s", resp.Status)
+	log.Printf("Random Meme Response %s", resp.Status)
 
 }
 
@@ -37,7 +35,7 @@ func SendNSFWMemes(userID []string, subreddit string) {
 		log.Println(err)
 	}
 
-	log.Printf("Specific Meme POST Request Response %s", resp.Status)
+	log.Printf("Specific Meme Response %s", resp.Status)
 
 }
 

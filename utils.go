@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -139,7 +138,6 @@ func GetMemeBody(userID []string, url string, postlink string, memeType string) 
 			},
 		},
 	}
-	fmt.Println(body)
 	return body
 }
 

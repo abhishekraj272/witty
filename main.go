@@ -39,5 +39,6 @@ var NsfwSubreddits = []string{"NSFWFunny", "NSFWMeme", "MemesNSFW", "Nsfwhumour"
 var RndSubreddits = []string{"memes", "dankmemes", "Memes_Of_The_Dank", "ComedyCemetery", "FellowKids", "wholesomememes", "ProtectAndServe"}
 
 func main() {
+
 	machaao.Server(MessageHandler)
 }

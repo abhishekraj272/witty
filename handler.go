@@ -46,12 +46,12 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
 	messageData := claims["sub"].(map[string]interface{})["messaging"].([]interface{})[0].(map[string]interface{})["message_data"]
 	messageText := messageData.(map[string]interface{})["text"].(string)
 
-	fmt.Println(messageData)
-	fmt.Println(messageText)
-
-	fmt.Println(r.Header["User_id"])
+	actionType := messageData.(map[string]interface{})["action_type"]
+	timezone := claims["sub"].(map[string]interface{})["messaging"].([]interface{})[0].(map[string]interface{})["user"].(map[string]interface{})["timezone"]
 
 	var userID []string = r.Header["User_id"]
+
+	log.Printf("User: %s, Timezone: %s, ActionType: %s, Message: %s", userID[0], timezone, actionType, messageText)
 
 	// Send quick reply
 	if strings.ToLower(messageText) == "hi" {
